@@ -28,9 +28,11 @@ def igly(x2, y2, k2):
     pygame.draw.polygon(screen, color_black,
                         ((x2, y2), (x2 + k2 * width_igla, y2), (x2 + k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
     pygame.draw.polygon(screen, color_igla, (
-    (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2), (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)))
+        (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2),
+        (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)))
     pygame.draw.polygon(screen, color_black, (
-    (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2), (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
+        (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2),
+        (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
 
 
 def mushroom(x3, y3, k3):
@@ -163,8 +165,10 @@ def egik(x1, y1, k1):
     igly(x1 + k1 * 0.7 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
     igly(x1 - k1 * 0.9 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
 
-    pygame.draw.circle(screen, color_mushroom, (x1 - k1 * 2.7 * shirina / 8, y1 - k1 * 0.8 * vysota / 2), 0.11 * k1 * shirina)
-    pygame.draw.circle(screen, color_white, (x1 - k1 * 2.7 * shirina / 8, y1 -k1 *  0.8 * vysota / 2), 0.11 * k1 * shirina, 1)
+    pygame.draw.circle(screen, color_mushroom, (x1 - k1 * 2.7 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
+                       0.11 * k1 * shirina)
+    pygame.draw.circle(screen, color_white, (x1 - k1 * 2.7 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
+                       0.11 * k1 * shirina, 1)
 
     igly(x1 - k1 * 0.2 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
     igly(x1 - k1 * 0 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
@@ -177,8 +181,10 @@ def egik(x1, y1, k1):
     igly(x1 - k1 * 0.95 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
     igly(x1 + k1 * 0.8 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
 
-    pygame.draw.circle(screen, color_red, (x1 + k1 * 2.2 * shirina / 8, y1 - k1 * 0.8 * vysota / 2), 0.11 * k1 * shirina)
-    pygame.draw.circle(screen, color_white, (x1 + k1 * 2.2 * shirina / 8, y1 - k1 * 0.8 * vysota / 2), 0.11 * k1 * shirina, 1)
+    pygame.draw.circle(screen, color_red, (x1 + k1 * 2.2 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
+                       0.11 * k1 * shirina)
+    pygame.draw.circle(screen, color_white, (x1 + k1 * 2.2 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
+                       0.11 * k1 * shirina, 1)
 
     igly(x1 - k1 * 0.1 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
     igly(x1 + k1 * 0.1 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)

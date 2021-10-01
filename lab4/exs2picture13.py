@@ -28,9 +28,11 @@ def igly(x2, y2, k2):
     pygame.draw.polygon(screen, color_black,
                         ((x2, y2), (x2 + k2 * width_igla, y2), (x2 + k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
     pygame.draw.polygon(screen, color_igla, (
-    (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2), (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)))
+        (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2),
+        (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)))
     pygame.draw.polygon(screen, color_black, (
-    (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2), (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
+        (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2),
+        (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
 
 
 def mushroom(x3, y3, k3):
@@ -220,8 +222,6 @@ pygame.draw.rect(screen, color_tree, (0, 0, 40, 5 * high / 8 + 50), 0)
 pygame.draw.rect(screen, color_tree, (70, 0, 80, 7 * high / 8 + 80), 0)
 pygame.draw.rect(screen, color_tree, (400, 0, 60, 5 * high / 8 + 50), 0)
 pygame.draw.rect(screen, color_tree, (540, 0, 30, 6 * high / 8 + 40), 0)
-
-
 
 while True:
     for event in pygame.event.get():
