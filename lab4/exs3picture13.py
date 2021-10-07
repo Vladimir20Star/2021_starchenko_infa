@@ -1,11 +1,15 @@
+import math
 import pygame
 import sys
 
 pygame.init()
 
-width = 600
+# Задаем размер окна рисования(width - ширина, high - высота)
+width = 800
 high = 800
 screen = pygame.display.set_mode((width, high))
+
+# Задаём наиболее часто используемые цвета рисования
 color_white = (255, 255, 255)
 color_dirty = (108, 93, 82)
 color_body = (70, 52, 52)
@@ -16,225 +20,169 @@ color_igla = (31, 21, 21)
 color_mushroom = (201, 114, 52)
 color_black = (0, 0, 0)
 color_grey = (125, 125, 125)
-shirina = 200
-vysota = 75
-width_igla = 7
-high_igla = 49
+
+# Заполняем фон цветом
+pygame.draw.rect(screen, color_green, (0, 0, 800, 500), width=0)
+pygame.draw.rect(screen, color_dirty, (0, 500, 800, 300), width=0)
 
 
-def igly(x2, y2, k2):
-    pygame.draw.polygon(screen, color_igla,
-                        ((x2, y2), (x2 + k2 * width_igla, y2), (x2 + k2 * width_igla / 2, y2 - k2 * high_igla)))
-    pygame.draw.polygon(screen, color_black,
-                        ((x2, y2), (x2 + k2 * width_igla, y2), (x2 + k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
-    pygame.draw.polygon(screen, color_igla, (
-        (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2),
-        (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)))
-    pygame.draw.polygon(screen, color_black, (
-        (x2 + k2 * width_igla, y2), (x2 + 2 * k2 * width_igla, y2),
-        (x2 + 3 * k2 * width_igla / 2, y2 - k2 * high_igla)), 1)
+def body(x, y, a):
+    """
+    Рисует тело ежа
+    :param x: координаты левого верхнего угла прямоугольника, описанного ококло тела по горизонтали
+    :param y: координаты левого верхнего угла прямоугольника, описанного ококло тела по вертикали
+    :param a: размерная величина
+    """
+    pygame.draw.ellipse(screen, color_body, (x, y, 2 * a, a))
+    pygame.draw.ellipse(screen, color_grey, (x, y, 2 * a, a), 2)
 
 
-def mushroom(x3, y3, k3):
-    # тк облажался с размером увеличу k3 в 0.6 раз и тк писал код, где y3 - центр ножки, чтобы y3 стало низом
-    k3 = 0.6 * k3
-    y3 = y3 - k3 * 100 / 2
-    pygame.draw.ellipse(screen, color_white,
-                        (x3 - k3 * 35 / 2, y3 - k3 * 100 / 2, k3 * 35, k3 * 100))
-    pygame.draw.ellipse(screen, color_red,
-                        (x3 - k3 * 120 / 2, y3 - 0.6 * k3 * 120, k3 * 120, k3 * 40))
-    pygame.draw.ellipse(screen, color_white,
-                        (x3 - k3 * 120 / 2, y3 - 0.6 * k3 * 120, k3 * 120, k3 * 40), 1)
-    pygame.draw.ellipse(screen, color_white,
-                        (x3 - 0.6 * k3 * 120 / 2, y3 - 0.4 * k3 * 120, 0.2 * k3 * 120, 0.2 * k3 * 40))
-    pygame.draw.ellipse(screen, color_white,
-                        (x3 - 0.3 * k3 * 120 / 2, y3 - 0.55 * k3 * 120, 0.2 * k3 * 120, 0.2 * k3 * 40))
-    pygame.draw.ellipse(screen, color_white,
-                        (x3 + 0.2 * k3 * 120 / 2, y3 - 0.45 * k3 * 120, 0.2 * k3 * 120, 0.2 * k3 * 40))
+def head_with_eyes_and_nose(x, y, a):
+    """
+    Рисует голову ежа с глазами и носиком. параметры входят те же что и для функции body
+    """
+    pygame.draw.ellipse(screen, color_body, (x + 1.6 * a, y + 0.45 * a, 0.8 * a, 0.4 * a))
+    pygame.draw.ellipse(screen, color_grey, (x + 1.6 * a, y + 0.45 * a, 0.8 * a, 0.4 * a), 2)
+    pygame.draw.circle(screen, color_black, (x + 2.37 * a, y + 0.65 * a), a * 0.06)
+    pygame.draw.circle(screen, color_grey, (x + 2.37 * a, y + 0.65 * a), a * 0.06, 2)
+    pygame.draw.circle(screen, color_black, (x + 2.08 * a, y + 0.5 * a), a * 0.07)
+    pygame.draw.circle(screen, color_grey, (x + 2.08 * a, y + 0.5 * a), a * 0.07, 2)
+    pygame.draw.circle(screen, color_black, (x + 1.9 * a, y + 0.55 * a), a * 0.07)
+    pygame.draw.circle(screen, color_grey, (x + 1.9 * a, y + 0.55 * a), a * 0.07, 2)
 
 
-def egik(x1, y1, k1):
-    # лапы
-    pygame.draw.ellipse(screen, color_body,
-                        (x1 - k1 * shirina / 2, y1 + k1 * vysota / 4, 0.2 * k1 * shirina, 0.2 * k1 * vysota))
-    pygame.draw.ellipse(screen, color_grey,
-                        (x1 - k1 * shirina / 2, y1 + k1 * vysota / 4, 0.2 * k1 * shirina, 0.2 * k1 * vysota), 1)
-
-    pygame.draw.ellipse(screen, color_body,
-                        (x1 + 0.3 * k1 * shirina, y1 + k1 * vysota / 4, 0.2 * k1 * shirina, 0.2 * k1 * vysota))
-    pygame.draw.ellipse(screen, color_grey,
-                        (x1 + 0.3 * k1 * shirina, y1 + k1 * vysota / 4, 0.2 * k1 * shirina, 0.2 * k1 * vysota), 1)
-
-    pygame.draw.ellipse(screen, color_body, (x1 - 0.6 * k1 * shirina, y1, 0.2 * k1 * shirina, 0.2 * k1 * vysota))
-    pygame.draw.ellipse(screen, color_grey, (x1 - 0.6 * k1 * shirina, y1, 0.2 * k1 * shirina, 0.2 * k1 * vysota), 1)
-
-    pygame.draw.ellipse(screen, color_body, (x1 + 0.4 * k1 * shirina, y1, 0.2 * k1 * shirina, 0.2 * k1 * vysota))
-    pygame.draw.ellipse(screen, color_grey, (x1 + 0.4 * k1 * shirina, y1, 0.2 * k1 * shirina, 0.2 * k1 * vysota), 1)
-
-    # тело
-    pygame.draw.ellipse(screen, color_body, (x1 - k1 * shirina / 2, y1 - k1 * vysota / 2, k1 * shirina, k1 * vysota))
-    pygame.draw.ellipse(screen, color_grey, (x1 - k1 * shirina / 2, y1 - k1 * vysota / 2, k1 * shirina, k1 * vysota), 1)
-
-    # голова
-    pygame.draw.ellipse(screen, color_body,
-                        (x1 + 0.35 * k1 * shirina, y1 - 0.2 * k1 * vysota, 0.3 * k1 * shirina, 0.37 * k1 * vysota))
-    pygame.draw.ellipse(screen, color_grey,
-                        (x1 + 0.35 * k1 * shirina, y1 - 0.2 * k1 * vysota, 0.3 * k1 * shirina, 0.37 * k1 * vysota), 1)
-
-    pygame.draw.circle(screen, color_black, (x1 + 0.5 * k1 * shirina, y1 - 0.05 * k1 * vysota), k1 * 4)
-    pygame.draw.circle(screen, color_grey, (x1 + 0.5 * k1 * shirina, y1 - 0.05 * k1 * vysota), k1 * 4, 1)
-
-    pygame.draw.circle(screen, color_black, (x1 + 0.56 * k1 * shirina, y1 - 0.09 * k1 * vysota), k1 * 4)
-    pygame.draw.circle(screen, color_grey, (x1 + 0.56 * k1 * shirina, y1 - 0.09 * k1 * vysota), k1 * 4, 1)
-
-    pygame.draw.circle(screen, color_black, (x1 + 0.645 * k1 * shirina, y1 - 0.015 * k1 * vysota), k1 * 2)
-    pygame.draw.circle(screen, color_grey, (x1 + 0.645 * k1 * shirina, y1 - 0.015 * k1 * vysota), k1 * 2, 1)
-
-    # рисуем иголки (с делением по рядам) и вклиниваем гриб с листом
-    igly(x1 - k1 * 0 * shirina / 2, y1 - k1 * 0.9 * vysota / 2, k1)
-    igly(x1 - k1 * 0.2 * shirina / 2, y1 - k1 * 0.9 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.1 * shirina / 2, y1 - k1 * 0.75 * vysota / 2, k1)
-    igly(x1 + k1 * 0.1 * shirina / 2, y1 - k1 * 0.75 * vysota / 2, k1)
-    igly(x1 - k1 * 0.3 * shirina / 2, y1 - k1 * 0.75 * vysota / 2, k1)
-    igly(x1 - k1 * 0.5 * shirina / 2, y1 - k1 * 0.75 * vysota / 2, k1)
-    igly(x1 + k1 * 0.3 * shirina / 2, y1 - k1 * 0.75 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.2 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-    igly(x1 + k1 * 0.2 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0.4 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0.6 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-    igly(x1 + k1 * 0.4 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0.8 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-    igly(x1 + k1 * 0.6 * shirina / 2, y1 - k1 * 0.6 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.1 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.1 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.3 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.3 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.5 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.5 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.7 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.7 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.9 * shirina / 2, y1 - k1 * 0.45 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.2 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.2 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0.4 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0.6 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.4 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0.8 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.6 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 1 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.8 * shirina / 2, y1 - k1 * 0.3 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.1 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.1 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.3 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.3 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.5 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.5 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.7 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.7 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.9 * shirina / 2, y1 - k1 * 0.15 * vysota / 2, k1)
-
-    mushroom(x1, y1, k1)
-
-    igly(x1 - k1 * 0.2 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 - k1 * 0 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 + k1 * 0.2 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 - k1 * 0.4 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 - k1 * 0.6 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 + k1 * 0.4 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 - k1 * 0.8 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 + k1 * 0.6 * shirina / 2, y1 - 0 * vysota / 2, k1)
-    igly(x1 - k1 * 1 * shirina / 2, y1 - 0 * vysota / 2, k1)
-
-    pygame.draw.circle(screen, color_mushroom, (x1 - k1 * shirina / 4, y1 - k1 * vysota / 2), 0.11 * k1 * shirina)
-    pygame.draw.circle(screen, color_white, (x1 - k1 * shirina / 4, y1 - k1 * vysota / 2), 0.11 * k1 * shirina, 1)
-
-    igly(x1 - k1 * 0.1 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.1 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.3 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.3 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.5 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.5 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.7 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 + k1 * 0.7 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-    igly(x1 - k1 * 0.9 * shirina / 2, y1 + k1 * 0.15 * vysota / 2, k1)
-
-    pygame.draw.circle(screen, color_mushroom, (x1 - k1 * 2.7 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
-                       0.11 * k1 * shirina)
-    pygame.draw.circle(screen, color_white, (x1 - k1 * 2.7 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
-                       0.11 * k1 * shirina, 1)
-
-    igly(x1 - k1 * 0.2 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.2 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0.4 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0.6 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.4 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0.8 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.6 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 - k1 * 0.95 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-    igly(x1 + k1 * 0.8 * shirina / 2, y1 + k1 * 0.3 * vysota / 2, k1)
-
-    pygame.draw.circle(screen, color_red, (x1 + k1 * 2.2 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
-                       0.11 * k1 * shirina)
-    pygame.draw.circle(screen, color_white, (x1 + k1 * 2.2 * shirina / 8, y1 - k1 * 0.8 * vysota / 2),
-                       0.11 * k1 * shirina, 1)
-
-    igly(x1 - k1 * 0.1 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.1 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.3 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.3 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.5 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.5 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.7 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 + k1 * 0.7 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-    igly(x1 - k1 * 0.9 * shirina / 2, y1 + k1 * 0.45 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.2 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-    igly(x1 + k1 * 0.2 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0.4 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0.6 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-    igly(x1 + k1 * 0.4 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-    igly(x1 - k1 * 0.8 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-    igly(x1 + k1 * 0.6 * shirina / 2, y1 + k1 * 0.6 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.1 * shirina / 2, y1 + k1 * 0.75 * vysota / 2, k1)
-    igly(x1 + k1 * 0.1 * shirina / 2, y1 + k1 * 0.75 * vysota / 2, k1)
-    igly(x1 + k1 * 0.3 * shirina / 2, y1 + k1 * 0.75 * vysota / 2, k1)
-    igly(x1 - k1 * 0.3 * shirina / 2, y1 + k1 * 0.75 * vysota / 2, k1)
-    igly(x1 - k1 * 0.5 * shirina / 2, y1 + k1 * 0.75 * vysota / 2, k1)
-    igly(x1 + k1 * 0.5 * shirina / 2, y1 + k1 * 0.75 * vysota / 2, k1)
-    igly(x1 - k1 * 0.7 * shirina / 2, y1 + k1 * 0.75 * vysota / 2, k1)
-
-    igly(x1 - k1 * 0.2 * shirina / 2, y1 + k1 * 0.9 * vysota / 2, k1)
-    igly(x1 - k1 * 0 * shirina / 2, y1 + k1 * 0.9 * vysota / 2, k1)
-    igly(x1 + k1 * 0.2 * shirina / 2, y1 + k1 * 0.9 * vysota / 2, k1)
-    igly(x1 - k1 * 0.4 * shirina / 2, y1 + k1 * 0.9 * vysota / 2, k1)
+def frontside_legs(x, y, a):
+    """
+    Рисует ноги, находящиеся перел телом. параметры входят те же что и для функции body
+    """
+    pygame.draw.ellipse(screen, color_body, (x + 1.35 * a, y + 0.89 * a, 0.3 * a, 0.17 * a))
+    pygame.draw.ellipse(screen, color_grey, (x + 1.35 * a, y + 0.89 * a, 0.3 * a, 0.17 * a), 2)
+    pygame.draw.ellipse(screen, color_body, (x + 0.27 * a, y + 0.86 * a, 0.3 * a, 0.17 * a))
+    pygame.draw.ellipse(screen, color_grey, (x + 0.27 * a, y + 0.86 * a, 0.3 * a, 0.17 * a), 2)
 
 
-screen.fill(color_green)
-pygame.draw.rect(screen, color_dirty, (0, 5 * high / 8, width, 3 * high / 8), 0)
-egik(400, 700, 1)
-egik(140, 560, 0.5)
-pygame.draw.rect(screen, color_tree, (0, 0, 40, 5 * high / 8 + 50), 0)
-pygame.draw.rect(screen, color_tree, (70, 0, 80, 7 * high / 8 + 80), 0)
-pygame.draw.rect(screen, color_tree, (400, 0, 60, 5 * high / 8 + 50), 0)
-pygame.draw.rect(screen, color_tree, (540, 0, 30, 6 * high / 8 + 40), 0)
-egik(550, 540, 0.8)
-egik(0, 700, 0.5)
-mushroom(580, 830, 1)
-mushroom(525, 810, 0.6)
-mushroom(460, 850, 1.2)
-mushroom(410, 835, 0.7)
-mushroom(350, 820, 0.7)
-mushroom(290, 850, 1.4)
+def backside_legs(x, y, a):
+    """
+    Рисует ноги, находящиеся за телом. параметры входят те же что и для функции body
+    """
+    pygame.draw.ellipse(screen, color_body, (x + 1.56 * a, y + 0.76 * a, 0.3 * a, 0.17 * a))
+    pygame.draw.ellipse(screen, color_grey, (x + 1.56 * a, y + 0.76 * a, 0.3 * a, 0.17 * a), 2)
+    pygame.draw.ellipse(screen, color_body, (x + 0.06 * a, y + 0.7 * a, 0.3 * a, 0.17 * a))
+    pygame.draw.ellipse(screen, color_grey, (x + 0.06 * a, y + 0.7 * a, 0.3 * a, 0.17 * a), 2)
+
+
+def rotate_spains(x, y, a, angle):
+    """
+    Функция рисует ряд из двух игл, повернутых относительно горизонтали на некотрый угол, относительно левого нижнего
+    края своих координат
+    :param x: координаты левого нижнего края по горизонтали
+    :param y: координаты левого нижнего края по вертикали
+    :param a: размерная величина
+    :param angle: угол поворота ("+" - против часовой стрелки)
+    """
+    angle = math.radians(angle)
+    i = math.sin(angle) * a
+    j = math.cos(angle) * a
+    phi = math.atan(10)
+    c = (101 ** 0.5) * a / 2
+    for k in range(2):
+        pygame.draw.polygon(screen, 'brown4',
+                            [(x, y), (x + j, y - i), (x + c * math.cos(phi + angle), y - c * math.sin(phi + angle))])
+        pygame.draw.aalines(screen, color_black, True,
+                            [[x, y], [x + j, y - i], [x + c * math.cos(phi + angle), y - c * math.sin(phi + angle)]])
+        x += j
+        y -= i
+
+
+def mushrooms(x, y, shir, vist):
+    """
+    Рисует мухоморы
+    :param x: Примерные координаты центра по гор.
+    :param y: Примерные координаты центра по верт.
+    :param shir: ширина ножки
+    :param vist: высота ножки
+    """
+    pygame.draw.ellipse(screen, color_white, (x, y, shir, vist * 0.9))
+    pygame.draw.ellipse(screen, color_black, (x, y, shir, vist * 0.9), 2)
+    pygame.draw.ellipse(screen, color_red, (x - (vist - shir) / 2, y - 0.5 * shir, vist, shir))
+    pygame.draw.ellipse(screen, color_white, (x - (vist - shir) / 2, y - 0.5 * shir, vist, shir), 1)
+    pygame.draw.ellipse(screen, color_white, (x + shir / 2, y, 0.3 * shir, 0.15 * shir))
+    pygame.draw.ellipse(screen, color_white, (x - shir / 4, y - shir / 6, 0.4 * shir, 0.2 * shir))
+    pygame.draw.ellipse(screen, color_white, (x + vist / 4, y - shir / 3, 0.4 * shir, 0.2 * shir))
+
+
+def fruits(x, y, a):
+    """
+    Рисует два овоща на спине у ежа между рядами, параметры те же что и для body
+    """
+    pygame.draw.circle(screen, 'sienna2', (x, y), 0.25 * a)
+    pygame.draw.circle(screen, 'black', (x, y), 0.25 * a, 1)
+    pygame.draw.circle(screen, 'sienna2', (x + 0.1 * a, y - 0.1 * a), 0.25 * a)
+    pygame.draw.circle(screen, 'black', (x + 0.1 * a, y - 0.1 * a), 0.25 * a, 1)
+    pygame.draw.circle(screen, 'red2', (x + 1.2 * a, y - 0.05 * a), 0.25 * a)
+    pygame.draw.circle(screen, 'black', (x + 1.2 * a, y - 0.05 * a), 0.25 * a, 1)
+
+
+def spains_application(x, y, a):
+    """
+    Метод заполняющий спину нашего ежа иголками и грибами с овощами. Параметры те же, что и для body
+    """
+    # вспомогательная переменная
+    i = 0
+    # длина нижнего основания треугольника иглы
+    l = a * 0.12
+    # отступ между рядами игл
+    dy = 0.1 * a
+    # задаем длины рядов игл на теле ежа
+    A = [0.4 * a, 1.4 * a, 1.67 * a, 1.7 * a, 1.65 * a, 1.1 * a, 0.9 * a]
+    # задаем координаты начала рядов игл на теле ежа
+    COR = [[x + 0.8 * a, y + 2 * dy], [x + 0.5 * a, y + 3 * dy], [x + 0.2 * a, y + 4 * dy],
+           [x + 0.02 * a, y + 5.2 * dy], [x + 0.1 * a, y + 6.5 * dy], [x + 0.38 * a, y + 8 * dy],
+           [x + 0.4 * a, y + 9 * dy]]
+    # цикл рисующий иглы на еже
+    for j in COR:
+        k = int(A[i] / l)
+        # напишем условие вставление между рядами игл грибов и овощей
+        if j == COR[4]:
+            mushrooms(x + 0.7 * a, y - 0.16 * a, 0.3 * a, 0.6 * a)
+            fruits(x + 0.2 * a, y + 0.2 * a, a)
+        for o in range(k):
+            if o % 3 == 1:
+                phi = -10
+            elif o % 3 == 2:
+                phi = -4
+            else:
+                phi = 17
+            rotate_spains(j[0], j[1], l, phi)
+            j[0] += l
+        i += 1
+
+
+def ejik(x, y, a):
+    """
+    Функция отрисовывает ежа в заданных координатах его верхнего леовго угла. Параметры те же что и для body
+    """
+    backside_legs(x, y, a)
+    body(x, y, a)
+    head_with_eyes_and_nose(x, y, a)
+    frontside_legs(x, y, a)
+    spains_application(x, y, a)
+
+
+# Составляем рисунок пользуясь функциями и достраивая деревья, располагая грибы
+pygame.draw.rect(screen, color_tree, (710, 0, 60, 590))
+pygame.draw.rect(screen, color_tree, (550, 0, 80, 600))
+pygame.draw.rect(screen, color_tree, (0, 0, 50, 600))
+ejik(510, 610, 110)
+ejik(690, 460, 70)
+ejik(240, 490, 70)
+pygame.draw.rect(screen, color_tree, (100, 0, 200, 790))
+ejik(-40, 700, 80)
+mushrooms(500, 780, 20, 30)
+mushrooms(530, 780, 30, 40)
+mushrooms(570, 770, 30, 50)
+mushrooms(600, 780, 20, 40)
+mushrooms(630, 790, 10, 20)
 
 while True:
     for event in pygame.event.get():
