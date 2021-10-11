@@ -13,27 +13,35 @@ screen = pygame.display.set_mode((WIDTH, HIGH))
 MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 
-COLORS = ['red', 'blue', 'yellow', 'green', 'magenta', 'cyan']
+COLORS = ['red', 'blue', 'yellow', 'green', 'magenta', 'cyan', 'white', 'black']
 parameters_ball1 = ()
 parameters_ball2 = ()
 parameters_ball3 = ()
 parameters_ball4 = ()
 parameters_ball5 = ()
 parameters = [parameters_ball1, parameters_ball2, parameters_ball3, parameters_ball4, parameters_ball5]
-SPEED_MAX = 100
 score = 0
+
 
 def new_ball():
     """
     рисует новый шарик
     """
-    a = 15 // (score // 10 + 1) # размер шара от уровня
-    r = randint(a, 5 * a)
+    a = 6
+    speed_max = 100
+    if score // 5 < 10:
+        a = 15 - (score // 5)  # размер шара от уровня (уровень = score // 5)
+    else:
+        speed_max = int(100 * 1.2 ** (score // 5 - 9))
+    if score // 5 > 10:
+        r = randint(3 * a, 5 * a)
+    else:
+        r = randint(a, 5 * a)
     x = randint(r, WIDTH - r)
     y = randint(r, HIGH - r)
-    color = COLORS[randint(0, 5)]
-    v_x = randint(-SPEED_MAX, SPEED_MAX)
-    v_y = randint(-SPEED_MAX, SPEED_MAX)
+    color = COLORS[randint(0, 7)]
+    v_x = randint(-speed_max, speed_max)
+    v_y = randint(-speed_max, speed_max)
     pygame.draw.circle(screen, color, (x, y), r)
     return [x, y, r, v_x, v_y, color]
 
@@ -46,15 +54,34 @@ def new_goals():
         parameters[k] = new_ball()
 
 
+def black_hole():
+    """телепортирует шарик в новое место, но скорость не меняется"""
+    for k in range(0, 5):
+        x, y, r, v_x, v_y, color = parameters[k]
+        if randint(0, 19) == 0 and (
+                (WIDTH - x < r and v_x > 0) or (x < r and v_x < 0) or (HIGH - y < r and v_y > 0) or (
+                y < r and v_y < 0)):  # при ударе о стенку в 1 из 20 случаев переместится в рандомное место
+            x, y, _, _, _, _ = new_ball()  # _ тк принимает 6 переменных, а обновляем 2
+            parameters[k] = x, y, r, v_x, v_y, color
+
+
 def stenka(k):
     """
     если k-ый шар касается стенки, то отскакивает
     """
     x, y, r, v_x, v_y, color = parameters[k]
-    if WIDTH - x < r or x < r:
+    if (WIDTH - x < r and v_x > 0) or (x < r and v_x < 0):
         v_x *= -1
-    if HIGH - y < r or y < r:
+        if randint(0, 19) == 0:
+            v_y *= -1
+        if 0.98 * v_x > 100:
+            v_x *= 0.98
+    if (HIGH - y < r and v_y > 0) or (y < r and v_y < 0):
         v_y *= -1
+        if randint(0, 19) == 0:
+            v_x *= -1
+        if 0.98 * v_y > 100:
+            v_y *= 0.98
     parameters[k] = [x, y, r, v_x, v_y, color]
 
 
@@ -65,6 +92,7 @@ def ball():
     for k in range(0, 5):
         x, y, r, v_x, v_y, color = parameters[k]
         parameters[k] = [x + v_x / FPS, y + v_y / FPS, r, v_x, v_y, color]
+        black_hole()
         stenka(k)
         pygame.draw.circle(screen, color, (x, y), r)
 
@@ -77,7 +105,7 @@ def scores_plus():
     x_mouse, y_mouse = event.pos
     for k in range(0, 5):
         x, y, r, v_x, v_y, color = parameters[k]
-        if (x - x_mouse)**2 + (y - y_mouse)**2 < r**2:
+        if (x - x_mouse) ** 2 + (y - y_mouse) ** 2 < r ** 2:
             print("У вас +1 очко")
             new_goals()
             return score + 1
@@ -89,6 +117,9 @@ def scores_plus():
 
 
 def score_draw():
+    """
+    выводит счёт на экран
+    """
     myfont = pygame.font.SysFont('arial', 30)
     textsurface = myfont.render('Ваши очки: ' + str(score), False, (255, 255, 255))
     screen.blit(textsurface, (0, 0))
