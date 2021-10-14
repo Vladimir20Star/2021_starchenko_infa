@@ -10,10 +10,7 @@ HIGH = 800
 WIDTH = 1200
 screen = pygame.display.set_mode((WIDTH, HIGH))
 
-MAGENTA = (255, 0, 255)
-CYAN = (0, 255, 255)
-
-COLORS = ['red', 'blue', 'yellow', 'green', 'magenta', 'cyan', 'white', 'black']
+COLORS = ['red', 'blue', 'yellow', 'green', 'magenta', 'cyan', 'white', 'black']  # да, есть черные шары на черном фоне
 parameters_ball1 = ()
 parameters_ball2 = ()
 parameters_ball3 = ()
@@ -23,12 +20,12 @@ parameters = [parameters_ball1, parameters_ball2, parameters_ball3, parameters_b
 score = 0
 
 
-def new_ball():
+def new_ball(k):
     """
     рисует новый шарик
     """
-    a = 6
-    speed_max = 100
+    a = 6  # минимальный радиус шарика
+    speed_max = 100  # максимальная скорость шарика при счёте 0 - 49
     if score // 5 < 10:
         a = 15 - (score // 5)  # размер шара от уровня (уровень = score // 5)
     else:
@@ -39,11 +36,14 @@ def new_ball():
         r = randint(a, 5 * a)
     x = randint(r, WIDTH - r)
     y = randint(r, HIGH - r)
-    color = COLORS[randint(0, 7)]
+    if k > 0 and parameters[k-1][5] == 'black':  # чтобы не было всех черных шаров (иначе будет анриал)
+        color = COLORS[randint(0, 6)]
+    else:
+        color = COLORS[randint(0, 7)]
     v_x = randint(-speed_max, speed_max)
     v_y = randint(-speed_max, speed_max)
     pygame.draw.circle(screen, color, (x, y), r)
-    return [x, y, r, v_x, v_y, color]
+    return [x, y, r, v_x, v_y, color]  # возвращаем параметры нового шарика
 
 
 def new_goals():
@@ -51,7 +51,7 @@ def new_goals():
     создаёт новые шары и записывает их параметры
     """
     for k in range(0, 5):
-        parameters[k] = new_ball()
+        parameters[k] = new_ball(k)
 
 
 def black_hole():
@@ -61,7 +61,7 @@ def black_hole():
         if randint(0, 19) == 0 and (
                 (WIDTH - x < r and v_x > 0) or (x < r and v_x < 0) or (HIGH - y < r and v_y > 0) or (
                 y < r and v_y < 0)):  # при ударе о стенку в 1 из 20 случаев переместится в рандомное место
-            x, y, _, _, _, _ = new_ball()  # _ тк принимает 6 переменных, а обновляем 2
+            x, y, _, _, _, _ = new_ball(k)  # _ тк принимает 6 переменных, а обновляем 2
             parameters[k] = x, y, r, v_x, v_y, color
 
 
@@ -72,15 +72,15 @@ def stenka(k):
     x, y, r, v_x, v_y, color = parameters[k]
     if (WIDTH - x < r and v_x > 0) or (x < r and v_x < 0):
         v_x *= -1
-        if randint(0, 19) == 0:
+        if randint(0, 19) == 0:  # в одном из 20 случаем отскакивает в обратном направлении
             v_y *= -1
-        if 0.98 * v_x > 100:
+        if 0.98 * v_x > 100:  # замедляется при ударе, если скорость больше 100
             v_x *= 0.98
     if (HIGH - y < r and v_y > 0) or (y < r and v_y < 0):
         v_y *= -1
-        if randint(0, 19) == 0:
+        if randint(0, 19) == 0:  # в одном из 20 случаем отскакивает в обратном направлении
             v_x *= -1
-        if 0.98 * v_y > 100:
+        if 0.98 * v_y > 100:  # замедляется при ударе, если скорость больше 100
             v_y *= 0.98
     parameters[k] = [x, y, r, v_x, v_y, color]
 
@@ -105,13 +105,11 @@ def scores_plus():
     x_mouse, y_mouse = event.pos
     for k in range(0, 5):
         x, y, r, v_x, v_y, color = parameters[k]
-        if (x - x_mouse) ** 2 + (y - y_mouse) ** 2 < r ** 2:
+        if (x - x_mouse) ** 2 + (y - y_mouse) ** 2 <= r ** 2:
             print("У вас +1 очко")
             new_goals()
             return score + 1
-        else:
-            popadanie = True
-    if popadanie:
+    if popadanie:  # сработает только после обработки всех шаров, если хоть одно попадание, return
         print("У вас -1 очко")
         return score - 1
 
@@ -121,7 +119,7 @@ def score_draw():
     выводит счёт на экран
     """
     myfont = pygame.font.SysFont('arial', 30)
-    textsurface = myfont.render('Ваши очки: ' + str(score), False, (255, 255, 255))
+    textsurface = myfont.render('Ваши очки: ' + str(score), False, 'white')
     screen.blit(textsurface, (0, 0))
 
 
@@ -138,7 +136,6 @@ while not finished:
         else:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 score = scores_plus()
-                print("Ваши очки: ", score)
     ball()
     pygame.display.update()
     screen.fill('black')
