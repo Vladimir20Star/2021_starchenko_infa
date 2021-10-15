@@ -2,6 +2,8 @@ import pygame
 import math
 from random import randint
 
+name_player = input("Введите ваше имя: ")  # запрашиваем имя игрока до начала работы визуализации
+
 pygame.init()
 pygame.font.init()
 
@@ -23,7 +25,7 @@ mipt = pygame.image.load('mipt.png').convert_alpha()  # загружаем ка�
 new_mipt_picture = pygame.transform.scale(mipt, (a_mipt, a_mipt))  # делаем её нужного размера
 new_mipt_picture.set_colorkey('white')  # убираем белый фон
 score = 0  # начальный результат
-name_player = input()
+last_score_changing = '0'
 
 
 def new_ball():
@@ -165,6 +167,22 @@ def processing():
     ball_processing()
 
 
+def score_plus_draw():
+    """
+    выводит изменения счёта на экран
+    """
+    myfont = pygame.font.SysFont('arial', 30)
+    if last_score_changing == '1':
+        textsurface = myfont.render('У Вас +1 очко', False, 'white')
+        screen.blit(textsurface, (0, 30))
+    elif last_score_changing == '5':
+        textsurface = myfont.render('У Вас +5 очков', False, 'white')
+        screen.blit(textsurface, (0, 30))
+    elif last_score_changing == '-1':
+        textsurface = myfont.render('У Вас -1 очко', False, 'white')
+        screen.blit(textsurface, (0, 30))
+
+
 def scores_plus():
     """
     обрабатывает позицию мышки и ставит очки за попадание/промах, в случае попадания делает новые шарики
@@ -174,23 +192,21 @@ def scores_plus():
     for k in range(0, 5):
         x, y, r, v_x, v_y, color = parameters[k]
         if (x - x_mouse) ** 2 + (y - y_mouse) ** 2 <= r ** 2:  # проверка на попадание в один из шаров
-            print("У вас +1 очко")
             new_goals()
-            return score + 1
+            return score + 1, '1'
     x, y, v_x, v_y = parameters[5]
     if 0 < x_mouse - x < a_mipt and 0 < y_mouse - y < a_mipt:  # проверка на попадание в котика
-        print("У вас +5 очков")
         new_goals()
-        return score + 5
+        return score + 5, '5'
     if popadanie:  # сработает только после обработки всех шаров, если хоть одно попадание, return сработает раньше
-        print("У вас -1 очко")
-        return score - 1
+        return score - 1, '-1'
 
 
 def score_draw():
     """
-    выводит счёт на экран
+    выводит счёт и последнее изменение счёта на экран
     """
+    score_plus_draw()
     myfont = pygame.font.SysFont('arial', 30)
     textsurface = myfont.render('Ваши очки: ' + str(score), False, 'white')
     screen.blit(textsurface, (0, 0))
@@ -202,10 +218,10 @@ def sort(string, scores, k):
     """
     for counter in range(4, k, -1):
         scores[counter] = scores[counter - 1]
-        string[counter + 1] = string[counter + 1]
+        string[counter + 1] = string[counter]
     scores[k] = score
-    string[k+1] = name_player
-    return string, scores
+    string[k+1] = name_player + '\n'
+    return string, " ".join(list(map(str, scores)))
 
 
 def save_name():
@@ -214,19 +230,18 @@ def save_name():
     """
     best_players_r = open('best_players.txt', 'r')
     string = best_players_r.readlines()
-    print(string)
     best_players_r.close()
     scores = string[0]
-    scores = scores.split
+    scores = scores.split()
     if score < int(scores[4]):
         return None
     for k in range(0, 5):
         if score > int(scores[k]):
             string, scores = sort(string, scores, k)
             best_players_w = open('best_players.txt', 'w')
-            best_players_w.write(scores + '\n')
+            best_players_w.write(scores + '\n')  # записывает строку результатов
             for counter in range(1, 6):
-                best_players_w.write(string[counter] + '\n')
+                best_players_w.write(string[counter])  # построчно записывает имена игроков
             best_players_w.close()
             return None
 
@@ -243,7 +258,7 @@ while not finished:
             finished = True
         else:
             if event.type == pygame.MOUSEBUTTONDOWN:
-                score = scores_plus()
+                score, last_score_changing = scores_plus()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 save_name()
                 finished = True
