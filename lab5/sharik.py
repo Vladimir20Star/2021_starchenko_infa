@@ -22,7 +22,7 @@ a_mipt = 50  # сторона котика
 mipt = pygame.image.load('mipt.png').convert_alpha()  # загружаем картинку котика
 new_mipt_picture = pygame.transform.scale(mipt, (a_mipt, a_mipt))  # делаем её нужного размера
 new_mipt_picture.set_colorkey('white')  # убираем белый фон
-score = 60  # начальный результат
+score = 0  # начальный результат
 
 
 def new_ball():
