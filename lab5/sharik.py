@@ -7,7 +7,7 @@ pygame.font.init()
 
 FPS = 60
 HIGH = 800
-WIDTH = 1200
+WIDTH = 1500
 screen = pygame.display.set_mode((WIDTH, HIGH))
 
 COLORS = ['red', 'blue', 'yellow', 'green', 'magenta', 'cyan', 'white', 'black']  # да, есть черные шары на черном фоне
@@ -52,7 +52,10 @@ def new_mipt():
     """
     Создаёт картинку котика фопфа и даёт начальные параметры
     """
-    speed_max = 400  # максимальная скорость котика
+    if score < 50:
+        speed_max = 400  # максимальная скорость котика
+    else:
+        speed_max = int(400 * 1.1 ** (score // 5 - 9))
     x = randint(a_mipt / 2, WIDTH - a_mipt / 2)
     y = randint(a_mipt / 2, HIGH - a_mipt / 2)
     v_x = randint(-speed_max, speed_max)
