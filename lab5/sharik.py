@@ -22,10 +22,10 @@ a_mipt = 50  # сторона котика
 mipt = pygame.image.load('mipt.png').convert_alpha()  # загружаем картинку котика
 new_mipt_picture = pygame.transform.scale(mipt, (a_mipt, a_mipt))  # делаем её нужного размера
 new_mipt_picture.set_colorkey('white')  # убираем белый фон
-score = 0  # начальный результат
+score = 60  # начальный результат
 
 
-def new_ball(k):
+def new_ball():
     """
     рисует новый шарик
     """
@@ -67,7 +67,7 @@ def new_goals():
     """
     parameters[5] = new_mipt()
     for k in range(0, 5):
-        parameters[k] = new_ball(k)
+        parameters[k] = new_ball()
 
 
 def black_hole():
@@ -79,7 +79,7 @@ def black_hole():
         if randint(0, 19) == 0 and (
                 (WIDTH - x < r and v_x > 0) or (x < r and v_x < 0) or (HIGH - y < r and v_y > 0) or (
                 y < r and v_y < 0)):  # при ударе о стенку в 1 из 20 случаев переместится в рандомное место
-            x, y, _, _, _, _ = new_ball(k)  # _ тк принимает 6 переменных, а обновляем 2
+            x, y, _, _, _, _ = new_ball()  # _ тк принимает 6 переменных, а обновляем 2
             parameters[k] = x, y, r, v_x, v_y, color
 
 
