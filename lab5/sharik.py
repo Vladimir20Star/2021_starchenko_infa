@@ -23,6 +23,7 @@ mipt = pygame.image.load('mipt.png').convert_alpha()  # загружаем ка�
 new_mipt_picture = pygame.transform.scale(mipt, (a_mipt, a_mipt))  # делаем её нужного размера
 new_mipt_picture.set_colorkey('white')  # убираем белый фон
 score = 0  # начальный результат
+name_player = input()
 
 
 def new_ball():
@@ -195,6 +196,41 @@ def score_draw():
     screen.blit(textsurface, (0, 0))
 
 
+def sort(string, scores, k):
+    """
+    обновляет строки с записями результатов
+    """
+    for counter in range(4, k, -1):
+        scores[counter] = scores[counter - 1]
+        string[counter + 1] = string[counter + 1]
+    scores[k] = score
+    string[k+1] = name_player
+    return string, scores
+
+
+def save_name():
+    """
+    сохраняет имена лучших игроков в файл
+    """
+    best_players_r = open('best_players.txt', 'r')
+    string = best_players_r.readlines()
+    print(string)
+    best_players_r.close()
+    scores = string[0]
+    scores = scores.split
+    if score < int(scores[4]):
+        return None
+    for k in range(0, 5):
+        if score > int(scores[k]):
+            string, scores = sort(string, scores, k)
+            best_players_w = open('best_players.txt', 'w')
+            best_players_w.write(scores + '\n')
+            for counter in range(1, 6):
+                best_players_w.write(string[counter] + '\n')
+            best_players_w.close()
+            return None
+
+
 new_goals()
 pygame.display.update()
 clock = pygame.time.Clock()
@@ -208,6 +244,9 @@ while not finished:
         else:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 score = scores_plus()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+                save_name()
+                finished = True
     processing()
     pygame.display.update()
     screen.fill('black')
