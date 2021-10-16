@@ -1,12 +1,12 @@
 import pygame
-import math
 from random import randint
 
-name_player = input("Введите ваше имя: ")  # запрашиваем имя игрока до начала работы визуализации
-
+# name_player = input("Введите ваше имя: ")  # запрашиваем имя игрока до начала работы визуализации
+name_player = 'nobody'
 pygame.init()
 pygame.font.init()
 
+clock = pygame.time.Clock()
 FPS = 60
 HIGH = 800
 WIDTH = 1500
@@ -26,6 +26,8 @@ new_mipt_picture = pygame.transform.scale(mipt, (a_mipt, a_mipt))  # делае�
 new_mipt_picture.set_colorkey('white')  # убираем белый фон
 score = 0  # начальный результат
 last_score_changing = '0'
+my_font = pygame.font.SysFont('arial', 30)  # настройка основных надписей
+finished = False  # пока так основной цикл работает
 
 
 def new_ball():
@@ -171,15 +173,14 @@ def score_plus_draw():
     """
     выводит изменения счёта на экран
     """
-    myfont = pygame.font.SysFont('arial', 30)
     if last_score_changing == '1':
-        textsurface = myfont.render('У Вас +1 очко', False, 'white')
+        textsurface = my_font.render('У Вас +1 очко', False, 'white')
         screen.blit(textsurface, (0, 30))
     elif last_score_changing == '5':
-        textsurface = myfont.render('У Вас +5 очков', False, 'white')
+        textsurface = my_font.render('У Вас +5 очков', False, 'white')
         screen.blit(textsurface, (0, 30))
     elif last_score_changing == '-1':
-        textsurface = myfont.render('У Вас -1 очко', False, 'white')
+        textsurface = my_font.render('У Вас -1 очко', False, 'white')
         screen.blit(textsurface, (0, 30))
 
 
@@ -188,7 +189,7 @@ def score_plus():
     обрабатывает позицию мышки и ставит очки за попадание/промах, в случае попадания делает новые шарики
     """
     popadanie = True
-    x_mouse, y_mouse = event.pos
+    x_mouse, y_mouse = event_0.pos
     for k in range(0, 5):
         x, y, r, v_x, v_y, color = parameters[k]
         if (x - x_mouse) ** 2 + (y - y_mouse) ** 2 <= r ** 2:  # проверка на попадание в один из шаров
@@ -207,8 +208,7 @@ def score_draw():
     выводит счёт и последнее изменение счёта на экран
     """
     score_plus_draw()
-    myfont = pygame.font.SysFont('arial', 30)
-    textsurface = myfont.render('Ваши очки: ' + str(score), False, 'white')
+    textsurface = my_font.render('Ваши очки: ' + str(score), False, 'white')
     screen.blit(textsurface, (0, 0))
 
 
@@ -252,45 +252,74 @@ def finish_place():
     """
     screen.fill('black')
     string, place, scores_best = save_name()  # перезаписывает лучших игроков и передаёт их имена сюда
-    myfont = pygame.font.SysFont('arial', 30)
 
-    textsurface = myfont.render('Ваш итоговый результат: ' + str(score), False, 'white')
+    textsurface = my_font.render('Ваш итоговый результат: ' + str(score), False, 'white')
     screen.blit(textsurface, (WIDTH / 2 - 200, HIGH / 2 - 270))
 
     if place == 7:
-        textsurface = myfont.render('К сожалению Вы не попали в топ 5 игроков', False, 'white')
+        textsurface = my_font.render('К сожалению Вы не попали в топ 5 игроков', False, 'white')
         screen.blit(textsurface, (WIDTH / 2 - 280, HIGH / 2 - 210))
     else:
-        textsurface = myfont.render('Поздравляем вы заняли ' + str(place + 1) + ' место среди всех игроков!', False,
-                                    'white')
+        textsurface = my_font.render('Поздравляем вы заняли ' + str(place + 1) + ' место среди всех игроков!', False,
+                                     'white')
         screen.blit(textsurface, (WIDTH / 2 - 330, HIGH / 2 - 210))
 
-    textsurface = myfont.render('Таблица лучших игроков: ', False, 'white')
+    textsurface = my_font.render('Таблица лучших игроков: ', False, 'white')
     screen.blit(textsurface, (WIDTH / 2 - 180, HIGH / 2 - 150))
 
     for k in range(1, 6):
         string[k] = string[k].strip()
-        textsurface = myfont.render(str(k) + ') ' + string[k] + '  (' + str(scores_best[k - 1]) + ')', False, 'white')
-        screen.blit(textsurface, (WIDTH / 2 - 130, HIGH / 2 - 150 + 60 * k))  # красивоподобранные координаты для вывода
+        textsurface = my_font.render(str(k) + ') ' + string[k] + '  (' + str(scores_best[k - 1]) + ')', False, 'white')
+        screen.blit(textsurface, (WIDTH / 2 - 100, HIGH / 2 - 150 + 60 * k))  # красивоподобранные координаты для вывода
     return True
 
 
+def text_in(text, num):
+    enter = True
+    if num.key == pygame.K_RETURN:
+        enter = False
+    elif num.key == pygame.K_BACKSPACE:
+        text = text[:-1]
+    else:
+        text += num.unicode
+    return text, enter
+
+
+def name_vvod():
+    name_vvod_bool = True
+    finish_program = False
+    name = ''
+    while name_vvod_bool:
+        clock.tick(FPS)
+        for event_1 in pygame.event.get():
+            if event_1.type == pygame.QUIT or (event_1.type == pygame.KEYDOWN and event_1.key == pygame.K_ESCAPE):
+                # закрываем программу, если нажали esc или закрыли окно
+                name_vvod_bool = False
+                finish_program = True
+            elif event_1.type == pygame.KEYDOWN:
+                name, name_vvod_bool = text_in(name, event_1)
+        textsurface = my_font.render(name, False, 'white')
+        screen.blit(textsurface, (WIDTH / 2 - 100, HIGH / 2 - 150))  # красивоподобранные координаты для вывода
+        pygame.display.update()
+        screen.fill('black')
+    return name, finish_program
+
+
+name_player, finished = name_vvod()
 new_goals()
 pygame.display.update()
-clock = pygame.time.Clock()
-finished = False
 table_of_the_best_players = False
 
 while not finished:
     clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
-            # закрываем программу, если нажали 'q' или закрыли окно
+    for event_0 in pygame.event.get():
+        if event_0.type == pygame.QUIT or (event_0.type == pygame.KEYDOWN and event_0.key == pygame.K_ESCAPE):
+            # закрываем программу, если нажали esc или закрыли окно
             finished = True
         else:
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event_0.type == pygame.MOUSEBUTTONDOWN:
                 score, last_score_changing = score_plus()  # обрабатываем счёт игрока
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_s and not table_of_the_best_players:
+            if event_0.type == pygame.KEYDOWN and event_0.key == pygame.K_s and not table_of_the_best_players:
                 # если нажали 's', выводим результат и останавливаем processing
                 table_of_the_best_players = finish_place()
     if not table_of_the_best_players:
