@@ -1,6 +1,6 @@
-10 8 6 5 4
-first
-second
-third
-forth
-fifth
+0 0 0 0 0
+_
+_
+_
+_
+_
