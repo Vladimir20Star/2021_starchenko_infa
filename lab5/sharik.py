@@ -183,7 +183,7 @@ def score_plus_draw():
         screen.blit(textsurface, (0, 30))
 
 
-def scores_plus():
+def score_plus():
     """
     обрабатывает позицию мышки и ставит очки за попадание/промах, в случае попадания делает новые шарики
     """
@@ -212,16 +212,16 @@ def score_draw():
     screen.blit(textsurface, (0, 0))
 
 
-def sort(string, scores, k):
+def sort(string, scores_best, k):
     """
     обновляет строки с записями результатов
     """
     for counter in range(4, k, -1):
-        scores[counter] = scores[counter - 1]
+        scores_best[counter] = scores_best[counter - 1]
         string[counter + 1] = string[counter]
-    scores[k] = score
-    string[k+1] = name_player + '\n'
-    return string, " ".join(list(map(str, scores)))
+    scores_best[k] = score
+    string[k + 1] = name_player + '\n'
+    return string, scores_best
 
 
 def save_name():
@@ -231,40 +231,72 @@ def save_name():
     best_players_r = open('best_players.txt', 'r')
     string = best_players_r.readlines()
     best_players_r.close()
-    scores = string[0]
-    scores = scores.split()
-    if score < int(scores[4]):
-        return None
+    scores_best = string[0]
+    scores_best = scores_best.split()
+    if score <= int(scores_best[4]):
+        return string, 7, scores_best  # выводит 7 как цифру - флажок
     for k in range(0, 5):
-        if score > int(scores[k]):
-            string, scores = sort(string, scores, k)
+        if score > int(scores_best[k]):
+            string, scores_best = sort(string, scores_best, k)
             best_players_w = open('best_players.txt', 'w')
-            best_players_w.write(scores + '\n')  # записывает строку результатов
+            best_players_w.write(" ".join(list(map(str, scores_best))) + '\n')  # записывает строку результатов
             for counter in range(1, 6):
                 best_players_w.write(string[counter])  # построчно записывает имена игроков
             best_players_w.close()
-            return None
+            return string, k, scores_best
+
+
+def finish_place():
+    """
+    сохраняет результат игрока в файле и выводит на пустой экран его результат и место
+    """
+    screen.fill('black')
+    string, place, scores_best = save_name()  # перезаписывает лучших игроков и передаёт их имена сюда
+    myfont = pygame.font.SysFont('arial', 30)
+
+    textsurface = myfont.render('Ваш итоговый результат: ' + str(score), False, 'white')
+    screen.blit(textsurface, (WIDTH / 2 - 200, HIGH / 2 - 270))
+
+    if place == 7:
+        textsurface = myfont.render('К сожалению Вы не попали в топ 5 игроков', False, 'white')
+        screen.blit(textsurface, (WIDTH / 2 - 280, HIGH / 2 - 210))
+    else:
+        textsurface = myfont.render('Поздравляем вы заняли ' + str(place + 1) + ' место среди всех игроков!', False,
+                                    'white')
+        screen.blit(textsurface, (WIDTH / 2 - 330, HIGH / 2 - 210))
+
+    textsurface = myfont.render('Таблица лучших игроков: ', False, 'white')
+    screen.blit(textsurface, (WIDTH / 2 - 180, HIGH / 2 - 150))
+
+    for k in range(1, 6):
+        string[k] = string[k].strip()
+        textsurface = myfont.render(str(k) + ') ' + string[k] + '  (' + str(scores_best[k - 1]) + ')', False, 'white')
+        screen.blit(textsurface, (WIDTH / 2 - 130, HIGH / 2 - 150 + 60 * k))  # красивоподобранные координаты для вывода
+    return True
 
 
 new_goals()
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
+table_of_the_best_players = False
 
 while not finished:
     clock.tick(FPS)
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+            # закрываем программу, если нажали 'q' или закрыли окно
             finished = True
         else:
             if event.type == pygame.MOUSEBUTTONDOWN:
-                score, last_score_changing = scores_plus()
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-                save_name()
-                finished = True
-    processing()
+                score, last_score_changing = score_plus()  # обрабатываем счёт игрока
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_s and not table_of_the_best_players:
+                # если нажали 's', выводим результат и останавливаем processing
+                table_of_the_best_players = finish_place()
+    if not table_of_the_best_players:
+        screen.fill('black')
+        processing()
+        score_draw()
     pygame.display.update()
-    screen.fill('black')
-    score_draw()
 
 pygame.quit()
