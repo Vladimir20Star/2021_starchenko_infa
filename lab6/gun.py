@@ -5,6 +5,7 @@ import pygame
 
 FPS = 30
 
+GUN_COLOR = (39, 100, 59)
 GAME_COLORS = ['red', 'blue', 'yellow', 'green', 'magenta', 'cyan']
 
 WIDTH = 800
@@ -15,6 +16,11 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 my_font = pygame.font.SysFont('arial', 30)
 points = 0
 mipt = pygame.image.load('mipt.png').convert_alpha()  # загружаем картинку котика
+tank = pygame.image.load('tank.png').convert_alpha()  # загружаем картинку танка
+width_of_tank = 50
+tank = pygame.transform.scale(tank, (2 * width_of_tank, width_of_tank))  # установленные размеры чтобы не сжался
+# создаем отраженную картинку для движения направо
+tank.set_colorkey('white')  # убираем белый фон
 
 
 class Ball:
@@ -75,12 +81,17 @@ class Gun:
         self.shots = 0
         self.x = 20
         self.y = 450
+        # скорости принимают -1, 0, 1 и показывают направление движения
+        self.vx = 0
+        self.vy = 0
+        self.v0 = 4  # модуль скорости по каждой координате
+        self.way = 1  # показывает куда до этого ехал танк
         self.width = 4
-        self.high = 30
+        self.high = 50
         self.f2_power = 15
         self.f2_on = 0
-        self.an = 1
-        self.color = 'grey'
+        self.an = 0
+        self.color = GUN_COLOR
         self.balls = []
         self.bullet = 0
 
@@ -96,7 +107,7 @@ class Gun:
         """
         self.shots += 1
         self.bullet += 1
-        new_ball = Ball()
+        new_ball = Ball(self.x, self.y)
         self.an = math.atan2((event_gun.pos[1] - new_ball.y), (event_gun.pos[0] - new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
         new_ball.vy = self.f2_power * math.sin(self.an)
@@ -105,13 +116,60 @@ class Gun:
         self.f2_power = 15
         self.high = 30
 
+    def input_moving(self, event_gun):
+        """Считывает с клавиатуры куда двигаться"""
+        if event.type == pygame.KEYDOWN:
+            if event_gun.key == pygame.K_LEFT:
+                self.vx = -1
+            elif event_gun.key == pygame.K_RIGHT:
+                self.vx = 1
+            else:
+                self.vx = 0
+
+            if event_gun.key == pygame.K_UP:
+                self.vy = -1
+            elif event_gun.key == pygame.K_DOWN:
+                self.vy = 1
+            else:
+                self.vy = 0
+        else:
+            self.vx = 0
+            self.vy = 0
+
+    def move(self):
+        """Движение танка в зависимости от направления мыши и нажатия кнопок"""
+        if self.vx != 0:
+            self.x += self.vx * self.v0 * 30 // FPS
+        if self.vy != 0:
+            self.y += self.vy * self.v0 * 30 // FPS
+
     def targetting(self, event_gun):
         """Прицеливание. Зависит от положения мыши."""
         if event_gun:
-            self.an = math.atan((event_gun.pos[1] - self.y) / (event_gun.pos[0] - self.x))
+            if event_gun.pos[0] - self.x > 0:
+                self.an = math.atan((event_gun.pos[1] - self.y) / (event_gun.pos[0] - self.x))
+            elif event_gun.pos[0] - self.x < 0:
+                self.an = math.pi + math.atan((event_gun.pos[1] - self.y) / (event_gun.pos[0] - self.x))
+            elif event_gun.pos[0] - self.x == 0 and event_gun.pos[1] - self.y >= 0:
+                self.an = math.pi / 2
+            elif event_gun.pos[0] - self.x == 0 and event_gun.pos[1] - self.y <= 0:
+                self.an = - math.pi / 2
 
     def draw(self):
         """рисует пушку"""
+        if self.vx == 1 or (self.way == 1 and self.vx == 0 and self.vy == 0):
+            screen.blit(tank, (self.x - width_of_tank, self.y - width_of_tank // 2))
+            self.way = 1
+        elif self.vx == -1 or (self.way == 2 and self.vx == 0 and self.vy == 0):
+            screen.blit(pygame.transform.flip(tank, True, True), (self.x - width_of_tank, self.y - width_of_tank // 2))
+            self.way = 2
+        elif self.vy == 1 or (self.way == 3 and self.vy == 0):
+            screen.blit(pygame.transform.rotate(tank, -90), (self.x - width_of_tank // 2, self.y - width_of_tank))
+            self.way = 3
+        elif self.vy == -1 or self.way == 4:
+            screen.blit(pygame.transform.rotate(tank, 90), (self.x - width_of_tank // 2, self.y - width_of_tank))
+            self.way = 4
+
         pygame.draw.polygon(screen, self.color, [(self.x, self.y), (
             self.x + self.width * math.sin(self.an), self.y - self.width * math.cos(self.an)), (
                                                      self.x + self.width * math.sin(self.an) + self.high * math.cos(
@@ -119,6 +177,13 @@ class Gun:
                                                      self.y - self.width * math.cos(self.an) + self.high * math.sin(
                                                          self.an)), (self.x + self.high * math.cos(self.an),
                                                                      self.y + self.high * math.sin(self.an))])
+        pygame.draw.polygon(screen, 'black', [(self.x, self.y), (
+            self.x + self.width * math.sin(self.an), self.y - self.width * math.cos(self.an)), (
+                                                     self.x + self.width * math.sin(self.an) + self.high * math.cos(
+                                                         self.an),
+                                                     self.y - self.width * math.cos(self.an) + self.high * math.sin(
+                                                         self.an)), (self.x + self.high * math.cos(self.an),
+                                                                     self.y + self.high * math.sin(self.an))], 1)
 
     def hit(self):
         """Попадание шарика в цель"""
@@ -138,7 +203,7 @@ class Gun:
                 self.high += 2
             self.color = 'orange'
         else:
-            self.color = 'grey'
+            self.color = GUN_COLOR
 
 
 class Target:
@@ -224,6 +289,7 @@ def processing():
             gun.hit()
             kill_everybody()
             return points + 1, Target(), Target()
+    gun.move()
     target_1.move()
     target_2.move()
     return points, target_1, target_2
@@ -243,6 +309,7 @@ while not finished:
         elif event.type == pygame.MOUSEMOTION:
             gun.targetting(event)
 
+        gun.input_moving(event)
     points, target_1, target_2 = processing()
     deleting()
 
